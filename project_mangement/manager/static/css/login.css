@@ -17,11 +17,13 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     width: 350px;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .form-container h2 {
     margin-bottom: 20px;
     color: #333;
+    font-size: 24px;
 }
 
 .form-container form {
@@ -30,16 +32,45 @@ body {
     gap: 15px;
 }
 
+.form-container .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.form-container label {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
 .form-container input[type="text"],
 .form-container input[type="password"],
-.form-container input[type="email"] {
+.form-container input[type="email"],
+.form-container input[type="tel"],
+.form-container select {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-container input.error {
+    border-color: #e74c3c; /* Red border for error */
+}
+
+.form-container .error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: left;
 }
 
 .form-container button {
-    padding: 10px;
+    padding: 12px;
     background-color: #4A90E2;
     color: white;
     border: none;
@@ -47,6 +78,7 @@ body {
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    width: 100%;
 }
 
 .form-container button:hover {
@@ -65,4 +97,35 @@ body {
 
 .form-container a:hover {
     text-decoration: underline;
+}
+
+.register-link {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.register-link a {
+    color: #4A90E2;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Add responsive styles for mobile */
+@media (max-width: 600px) {
+    .form-container {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .form-container h2 {
+        font-size: 20px;
+    }
+
+    .form-container input,
+    .form-container button {
+        font-size: 16px;
+    }
 }

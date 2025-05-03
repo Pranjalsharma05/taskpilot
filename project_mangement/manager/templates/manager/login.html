@@ -1,21 +1,82 @@
 {% load static %}
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>User Login</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Login</h2>
-        <form method="POST" action="{% url 'login' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
-    </div>
+
+<div class="form-container">
+    <h2>User Login</h2>
+    <form id="loginform" method="post" action="{% url 'process_login' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            {{ form.email }}
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            {{ form.password }}
+        </div>
+
+        <button type="submit">Login</button>
+
+        <p class="register-link">Don't have an account? <a href="{% url 'register' %}">Click here to register</a></p>
+
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#loginform").validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true
+                }
+            },
+            messages: {
+                email: {
+                    required: "Please enter your email address",
+                    email: "Please enter a valid email address"
+                },
+                password: {
+                    required: "Please enter your password"
+                }
+            },
+            submitHandler: function (form) {
+                $.ajax({
+                    url: "{% url 'process_login' %}",
+                    type: "POST",
+                    data: $(form).serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirect_url;
+                        } else {
+                            alert(response.message || "Login failed");
+                        }
+                    },
+                    error: function (xhr) {
+                        alert("Something went wrong. Please try again.");
+                    }
+                });
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

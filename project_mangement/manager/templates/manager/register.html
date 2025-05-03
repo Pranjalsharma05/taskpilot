@@ -5,17 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 </head>
 <body>
     <div class="form-container">
         <h2>Create an Account</h2>
-        <form method="POST">
+        <form id="registerform" method="POST" action="{% url 'register' %}">
             {% csrf_token %}
-            {{ form.as_p }}
+            
+            <!-- First Name Field -->
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                {{ form.first_name }}
+            </div>
+
+            <!-- Last Name Field -->
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                {{ form.last_name }}
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email">Email:</label>
+                {{ form.email }}
+            </div>
+
+            <!-- Mobile Field -->
+            <div class="form-group">
+                <label for="mobile">Mobile Number:</label>
+                {{ form.mobile }}
+            </div>
+
+            <!-- Role Field -->
+            <div class="form-group">
+                <label for="role">Role:</label>
+                {{ form.role }}
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password">Password:</label>
+                {{ form.password }}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+
+            <!-- Submit Button -->
             <button type="submit">Register</button>
         </form>
+
         <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            // jQuery validation
+            $("#registerform").validate({
+                rules: {
+                    first_name: {
+                        required: true,
+                        minlength: 2
+                    },
+                    last_name: {
+                        required: true,
+                        minlength: 2
+                    },
+                    email: {
+                        required: true,
+                        email: true
+                    },
+                    mobile: {
+                        required: true,
+                        minlength: 10,
+                        maxlength: 15
+                    },
+                    role: {
+                        required: true
+                    },
+                    password: {
+                        required: true,
+                        minlength: 6
+                    },
+                    confirm_password: {
+                        required: true,
+                        minlength: 6,
+                        equalTo: "#password"  // Ensure password and confirm password match
+                    }
+                },
+                messages: {
+                    first_name: {
+                        required: "Please enter your first name",
+                        minlength: "Your first name must be at least 2 characters long"
+                    },
+                    last_name: {
+                        required: "Please enter your last name",
+                        minlength: "Your last name must be at least 2 characters long"
+                    },
+                    email: {
+                        required: "Please enter your email address",
+                        email: "Please enter a valid email address"
+                    },
+                    mobile: {
+                        required: "Please enter your mobile number",
+                        minlength: "Your mobile number must be at least 10 digits long",
+                        maxlength: "Your mobile number cannot exceed 15 digits"
+                    },
+                    role: {
+                        required: "Please select a role"
+                    },
+                    password: {
+                        required: "Please enter your password",
+                        minlength: "Your password must be at least 6 characters long"
+                    },
+                    confirm_password: {
+                        required: "Please confirm your password",
+                        minlength: "Your confirm password must be at least 6 characters long",
+                        equalTo: "Password and confirm password do not match"
+                    }
+                },
+                submitHandler: function (form) {
+                    // AJAX submission of the form if valid
+                    var formData = $(form).serialize();
+
+                    $.ajax({
+                        url: "{% url 'register' %}",
+                        type: "POST",
+                        data: formData,
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message);  // Show success message
+                                window.location.href = response.redirect_url;  // Redirect to login
+                            } else {
+                                alert(response.message);  // Show error message
+                            }
+                        },
+                        error: function () {
+                            alert("There was an error processing your request. Please try again.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

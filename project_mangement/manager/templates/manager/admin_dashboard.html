@@ -7,48 +7,50 @@
     
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>Menu</h2>
-        <ul>
-            <li><a href="#" onclick="loadContent('{% url 'add_role' %}')">Add Role</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'users_data' %}')">Your Team</a></li> 
-            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">Manage Skills</a></li> 
+        <h2 class="mb-4">Admin Menu</h2>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="loadContent('{% url 'add_role' %}')">➕ Add Role</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="loadContent('{% url 'users_data' %}')">👥 Your Team</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="loadContent('{% url 'skill_manage' %}')">🛠 Manage Skills</a></li>
         </ul>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <div class="main-content" id="main-content">
-        <h1>Welcome, Admin!</h1>
+        <h1 class="mb-4">👋 Welcome, Admin!</h1>
         <p>Select an option from the sidebar to manage content.</p>
+
+        <!-- Dashboard Metrics -->
         <div class="row text-center mt-4">
-            <div class="col-md-3">
-                <div class="card shadow">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5>Total Users</h5>
-                        <h2>{{ total_users }}</h2>
+                        <h6>Total Users</h6>
+                        <h3 class="text-primary">{{ total_users }}</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5>Total Projects</h5>
-                        <h2>{{ total_projects }}</h2>
+                        <h6>Total Projects</h6>
+                        <h3 class="text-success">{{ total_projects }}</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5>Total Tasks</h5>
-                        <h2>{{ total_tasks }}</h2>
+                        <h6>Total Tasks</h6>
+                        <h3 class="text-warning">{{ total_tasks }}</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card shadow">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5>Hours Logged</h5>
-                        <h2>{{ time_logged }}</h2>
+                        <h6>Hours Logged</h6>
+                        <h3 class="text-danger">{{ time_logged }}</h3>
                     </div>
                 </div>
             </div>
@@ -57,115 +59,98 @@
         <!-- Chart Section -->
         <div class="row mt-5">
             <div class="col-md-6">
-                <canvas id="taskStatusChart"></canvas>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="mb-3">Task Status Overview</h5>
+                        <canvas id="taskStatusChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- Chart.js Library -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-let taskStatusChart = null;  // global variable for chart instance
+let taskStatusChart = null;
 
 function drawTaskStatusChart() {
     const ctx = document.getElementById('taskStatusChart')?.getContext('2d');
-    if (!ctx) return; // no canvas found (in case user clicks sidebar)
+    if (!ctx) return;
 
-    if (taskStatusChart !== null) {
-        taskStatusChart.destroy(); // destroy previous chart instance
-    }
+    if (taskStatusChart) taskStatusChart.destroy();
 
     taskStatusChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: [{% for item in task_status_counts %} "{{ item.status }}", {% endfor %}],
+            labels: [{% for item in task_status_counts %}"{{ item.status }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
             datasets: [{
-                label: 'Task Status',
-                data: [{% for item in task_status_counts %} {{ item.count }}, {% endfor %}],
+                data: [{% for item in task_status_counts %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
                 backgroundColor: [
-                    'rgba(75, 192, 192, 0.6)',
-                    'rgba(255, 206, 86, 0.6)',
-                    'rgba(153, 102, 255, 0.6)',
-                    'rgba(255, 99, 132, 0.6)'
-                ]
+                    '#4bc0c0', '#ffce56', '#9966cc', '#ff6384'
+                ],
+                borderWidth: 1
             }]
         }
     });
 }
 
-window.onload = function() {
-    drawTaskStatusChart(); // Draw initial chart when page loads
-};
+window.onload = drawTaskStatusChart;
 
-// Load Content Dynamically
 function loadContent(url) {
     fetch(url)
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not OK');
-        }
+        if (!response.ok) throw new Error('Network error');
         return response.text();
     })
     .then(html => {
         document.getElementById('main-content').innerHTML = html;
-
-        // After loading new page content, check if there is a chart to render
         if (document.getElementById('taskStatusChart')) {
             drawTaskStatusChart();
         }
     })
-    .catch(error => {
-        console.error('Error loading content:', error);
-    });
+    .catch(error => console.error('Error:', error));
 }
 </script>
 
-<!-- CSS for sidebar -->
+<!-- Sidebar Styling -->
 <style>
 .dashboard-layout {
     display: flex;
-    min-height: 80vh;
+    min-height: 100vh;
+    background-color: #f9f9fb;
 }
 
 .sidebar {
-    width: 250px;
-    background-color: #333;
+    width: 240px;
+    background-color: #2c3e50;
     color: white;
-    padding: 20px;
-    height: 100%;
+    padding: 25px 20px;
 }
 
 .sidebar h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 22px;
+    margin-bottom: 30px;
 }
 
-.sidebar ul {
-    list-style: none;
-    padding: 0;
+.sidebar .nav-link {
+    color: #ecf0f1;
+    padding: 8px 0;
+    font-size: 16px;
+    display: block;
+    transition: 0.2s;
 }
 
-.sidebar ul li {
-    margin: 15px 0;
-}
-
-.sidebar ul li a {
-    color: white;
+.sidebar .nav-link:hover {
+    color: #1abc9c;
     text-decoration: none;
-    font-size: 18px;
-}
-
-.sidebar ul li a:hover {
-    text-decoration: underline;
 }
 
 .main-content {
     flex: 1;
-    padding: 30px;
-    background-color: #f8f8f8;
+    padding: 40px;
 }
 </style>
 

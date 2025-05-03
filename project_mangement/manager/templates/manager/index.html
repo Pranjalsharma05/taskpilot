@@ -1,0 +1,84 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Project Landing Page</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>MyProject</h1>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Welcome to MyProject</h2>
+            <p>An intelligent platform designed to streamline your workflow, boost productivity, and simplify your digital life.</p>
+            <a href="{% url 'login' %}" class="btn">Get Started</a>
+        </div>
+    </section>
+
+    <section id="features" class="features reveal">
+        <div class="container">
+            <h3>Key Features</h3>
+            <div class="feature-grid">
+                <div class="feature">
+                    <h4>Smart Automation</h4>
+                    <p>Automate repetitive tasks with intelligent workflows.</p>
+                </div>
+                <div class="feature">
+                    <h4>Real-Time Collaboration</h4>
+                    <p>Work together with your team efficiently and in real time.</p>
+                </div>
+                <div class="feature">
+                    <h4>Analytics & Insights</h4>
+                    <p>Track your progress with rich data and reporting tools.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials reveal">
+        <div class="container">
+            <h3>What Our Users Say</h3>
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <p>"MyProject transformed how my team works—super intuitive and powerful!"</p>
+                    <h5>– Anjali R.</h5>
+                </div>
+                <div class="testimonial">
+                    <p>"We saved hours of manual work using the automation tools. Highly recommended!"</p>
+                    <h5>– Raj M.</h5>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 MyProject. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Scroll reveal animation
+        const reveals = document.querySelectorAll(".reveal");
+        window.addEventListener("scroll", () => {
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const revealPoint = 150;
+                if (elementTop < windowHeight - revealPoint) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

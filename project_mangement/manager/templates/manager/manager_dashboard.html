@@ -7,24 +7,25 @@
     
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>Menu</h2>
+        <h2>Manager</h2>
         <ul>
-            <li><a href="#" onclick="loadContent('{% url 'manager_home' %}')">Home</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'add_project' %}')">Add Projects</a></li>
-            <li><a href="{% url 'recommend_project' %}" onclick="loadContent('{% url 'recommend_project' %}')">Automate Projects</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">Manage Skills</a></li> 
+            <li><a href="#" onclick="loadContent('{% url 'manager_home' %}')">🏠 Home</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'add_project' %}')">➕ Add Projects</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'recommend_project' %}')">⚙️ Automate Projects</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">🧠 Manage Skills</a></li> 
         </ul>
     </div>
 
     <!-- Main Content Area -->
     <div class="main-content" id="main-content">
-        <h1>Welcome, Manager!</h1>
-        <p>Select an option from the sidebar to manage content.</p>
+        <div class="welcome-card">
+            <h1>Welcome, Manager! 👋</h1>
+            <p>Select an option from the sidebar to manage your workspace efficiently.</p>
+        </div>
     </div>
-
 </div>
 
-<!-- JavaScript to dynamically load content -->
+<!-- JavaScript for Dynamic Loading -->
 <script>
 function loadContent(url) {
     fetch(url)
@@ -43,27 +44,35 @@ function loadContent(url) {
 }
 </script>
 
-<!-- Responsive CSS -->
+<!-- Enhanced CSS UI -->
 <style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef2f5;
+    margin: 0;
+    padding: 0;
+}
+
 .dashboard-layout {
     display: flex;
-    min-height: 80vh;
-    flex-wrap: wrap; /* enables wrapping on smaller screens */
+    min-height: 100vh;
+    flex-wrap: wrap;
 }
 
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background-color: #333;
+    background: linear-gradient(to bottom, #2c3e50, #34495e);
     color: white;
-    padding: 20px;
-    height: 100%;
+    padding: 30px 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     flex-shrink: 0;
 }
 
 .sidebar h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 22px;
+    margin-bottom: 25px;
+    color: #ecf0f1;
 }
 
 .sidebar ul {
@@ -73,27 +82,54 @@ function loadContent(url) {
 }
 
 .sidebar ul li {
-    margin: 15px 0;
+    margin-bottom: 18px;
 }
 
 .sidebar ul li a {
-    color: white;
+    color: #ecf0f1;
     text-decoration: none;
-    font-size: 18px;
+    font-size: 17px;
+    display: block;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background 0.3s;
 }
 
 .sidebar ul li a:hover {
-    text-decoration: underline;
+    background-color: #1abc9c;
 }
 
 /* Main Content */
 .main-content {
     flex: 1;
-    padding: 30px;
-    background-color: #f8f8f8;
+    padding: 40px;
+    background-color: #f4f7fa;
 }
 
-/* Responsive Layout */
+.welcome-card {
+    background-color: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+
+.welcome-card:hover {
+    transform: translateY(-5px);
+}
+
+.welcome-card h1 {
+    font-size: 26px;
+    color: #2c3e50;
+}
+
+.welcome-card p {
+    color: #555;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .dashboard-layout {
         flex-direction: column;
@@ -101,7 +137,12 @@ function loadContent(url) {
 
     .sidebar {
         width: 100%;
-        height: auto;
+        text-align: center;
+    }
+
+    .sidebar ul li a {
+        display: inline-block;
+        margin: 5px;
     }
 
     .main-content {

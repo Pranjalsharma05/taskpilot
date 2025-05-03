@@ -7,6 +7,9 @@ from .forms import AddProjectForm, CommentForm, RegistrationForm, LoginForm, Rol
 from .models import AddProject, CustomUser, Role, Task,UserProfile,Skill,TimeLog
 from django.db.models import Count, Sum
 
+
+def index(request):
+    return render(request,"manager/index.html")
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -14,8 +17,11 @@ def register(request):
             email = form.cleaned_data['email']
 
             if CustomUser.objects.filter(email=email).exists():
-                messages.error(request, 'Email is already in use. Please choose another one.')
-                return render(request, 'manager/register.html', {'form': form})
+                # Return error message in JSON format
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Email is already in use. Please choose another one.'
+                })
 
             user_info = {
                 'first_name': form.cleaned_data['first_name'],
@@ -28,8 +34,18 @@ def register(request):
 
             save_user(user_info)
 
-            messages.success(request, 'Account created successfully! You can now login.')
-            return redirect('login')
+            return JsonResponse({
+                'success': True,
+                'message': 'Account created successfully! You can now login.',
+                'redirect_url': '/login/'  # Redirect to the login page
+            })
+        
+        # If form is not valid, return error message in JSON format
+        return JsonResponse({
+            'success': False,
+            'message': 'There was an error with your form. Please check the fields and try again.',
+            'errors': form.errors
+        })
     else:
         form = RegistrationForm()
 
@@ -49,13 +65,8 @@ def save_user(user_info):
     return user
 
 
-
 def login_user(request):
-    print("Login view triggered.") 
-    
-   
     if request.user.is_authenticated:
-        print(f"User {request.user.email} already authenticated.")  
         if request.user.role == 'admin':
             return redirect('admin_dashboard')
         elif request.user.role == 'manager':
@@ -63,46 +74,34 @@ def login_user(request):
         elif request.user.role == 'employee':
             return redirect('employee_dashboard')
 
+    form = LoginForm()
+    return render(request, 'manager/login.html', {'form': form})
+
+
+def process_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
-        print("Form submitted.")  # Debug: Check if form was submitted
-
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            print(f"Attempting to authenticate user with email: {email}")  # Debug: Check what email is being passed for authentication
-
-            # Use authenticate to validate user credentials
             user = authenticate(request, username=email, password=password)
 
-
-            if user is not None:
-                print(f"User {user.email} authenticated successfully.")  # Debug: Check if user is authenticated
+            if user:
                 login(request, user)
-                # Redirect based on the user's role
-                if user.role == 'admin':
-                    print("Redirecting to admin dashboard.")  # Debug: Check redirection logic
-                    return redirect('admin_dashboard')
-                elif user.role == 'manager':
-                    print("Redirecting to manager dashboard.")  # Debug: Check redirection logic
-                    return redirect('manager_dashboard')
-                elif user.role == 'employee':
-                    print("Redirecting to employee dashboard.")  # Debug: Check redirection logic
-                    return redirect('employee_dashboard')
+                role = user.role
+                if role == 'admin':
+                    return JsonResponse({'success': True, 'redirect_url': '/admin_dashboard/'})
+                elif role == 'manager':
+                    return JsonResponse({'success': True, 'redirect_url': '/manager_dashboard/'})
+                elif role == 'employee':
+                    return JsonResponse({'success': True, 'redirect_url': '/employee_dashboard/'})
                 else:
-                    messages.error(request, 'Unknown role.')
-                    return redirect('login')
+                    return JsonResponse({'success': False, 'message': 'Unknown user role'})
             else:
-                print("Invalid credentials provided.")  # Debug: Check if authentication fails
-                messages.error(request, 'Invalid credentials')
+                return JsonResponse({'success': False, 'message': 'Invalid email or password'})
         else:
-            print("Form is invalid.")  # Debug: Check if the form is invalid
-            messages.error(request, 'Form is not valid')
-
-    else:
-        form = LoginForm()
-
-    return render(request, 'manager/login.html', {'form': form})
+            return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 @login_required
 def admin_dashboard(request):
