@@ -1,0 +1,93 @@
+{% extends 'manager/base.html' %}
+
+{% block title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li><a href="#" onclick="loadContent('{% url 'manager_home' %}')">Home</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'add_project' %}')">Add Projects</a></li>
+            <li><a href="{% url 'recommend_project' %}" onclick="loadContent('{% url 'recommend_project' %}')">automate Projects</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">Manage Skills</a></li> 
+            <!-- Here manage_skills is your view URL for the skills page -->
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="main-content">
+        <h1>Welcome, Manager!</h1>
+        <p>Select an option from the sidebar to manage content.</p>
+    </div>
+
+</div>
+
+<!-- JavaScript to load real pages dynamically -->
+<script>
+function loadContent(url) {
+    fetch(url)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.text();
+    })
+    .then(html => {
+        document.getElementById('main-content').innerHTML = html;
+    })
+    .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+    });
+}
+</script>
+
+<!-- CSS for sidebar -->
+<style>
+.dashboard-layout {
+    display: flex;
+    min-height: 80vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    height: 100%;
+}
+
+.sidebar h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    background-color: #f8f8f8;
+}
+</style>
+
+{% endblock %}

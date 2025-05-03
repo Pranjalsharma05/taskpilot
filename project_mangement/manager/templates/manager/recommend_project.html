@@ -1,0 +1,56 @@
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Recommend Employees for New Project</h2>
+
+    <!-- First form: Take project info + skills -->
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <!-- Add these 2 fields manually if not in form -->
+        <div class="form-group mt-3">
+            <label>Project Name:</label>
+            <input type="text" name="projectname" class="form-control" required>
+        </div>
+        <div class="form-group mt-3">
+            <label>Project Description:</label>
+            <textarea name="projectdesc" class="form-control" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4">Recommend Employees</button>
+    </form>
+
+    {% if recommendations %}
+        <h3 class="mt-5">Recommended Employees:</h3>
+
+        <form method="post">
+            {% csrf_token %}
+            <!-- Hidden fields to carry project info again -->
+            <input type="hidden" name="projectname" value="{{ projectname }}">
+            <input type="hidden" name="projectdesc" value="{{ projectdesc }}">
+            <input type="hidden" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+            <input type="hidden" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+            <input type="hidden" name="difficulty_level" value="{{ difficulty_level }}">
+            <input type="hidden" name="num_people_required" value="{{ num_people_required }}">
+            {% for skill in skills %}
+                <input type="hidden" name="skills" value="{{ skill.id }}">
+            {% endfor %}
+            
+            <div class="form-group">
+                {% for rec in recommendations %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selected_employees" value="{{ rec.user.id }}" id="emp{{ forloop.counter }}">
+                        <label class="form-check-label" for="emp{{ forloop.counter }}">
+                            {{ rec.user.username }} - Score: {{ rec.score|floatformat:2 }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" name="save_project" class="btn btn-success w-100 mt-4">Save Project with Selected Employees</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

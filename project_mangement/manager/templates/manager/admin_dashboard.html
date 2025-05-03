@@ -1,0 +1,172 @@
+{% extends 'manager/base.html' %}
+{% load static %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <ul>
+            <li><a href="#" onclick="loadContent('{% url 'add_role' %}')">Add Role</a></li>
+            <li><a href="#" onclick="loadContent('{% url 'users_data' %}')">Your Team</a></li> 
+            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">Manage Skills</a></li> 
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="main-content">
+        <h1>Welcome, Admin!</h1>
+        <p>Select an option from the sidebar to manage content.</p>
+        <div class="row text-center mt-4">
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>Total Users</h5>
+                        <h2>{{ total_users }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>Total Projects</h5>
+                        <h2>{{ total_projects }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>Total Tasks</h5>
+                        <h2>{{ total_tasks }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>Hours Logged</h5>
+                        <h2>{{ time_logged }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <canvas id="taskStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let taskStatusChart = null;  // global variable for chart instance
+
+function drawTaskStatusChart() {
+    const ctx = document.getElementById('taskStatusChart')?.getContext('2d');
+    if (!ctx) return; // no canvas found (in case user clicks sidebar)
+
+    if (taskStatusChart !== null) {
+        taskStatusChart.destroy(); // destroy previous chart instance
+    }
+
+    taskStatusChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: [{% for item in task_status_counts %} "{{ item.status }}", {% endfor %}],
+            datasets: [{
+                label: 'Task Status',
+                data: [{% for item in task_status_counts %} {{ item.count }}, {% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ]
+            }]
+        }
+    });
+}
+
+window.onload = function() {
+    drawTaskStatusChart(); // Draw initial chart when page loads
+};
+
+// Load Content Dynamically
+function loadContent(url) {
+    fetch(url)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.text();
+    })
+    .then(html => {
+        document.getElementById('main-content').innerHTML = html;
+
+        // After loading new page content, check if there is a chart to render
+        if (document.getElementById('taskStatusChart')) {
+            drawTaskStatusChart();
+        }
+    })
+    .catch(error => {
+        console.error('Error loading content:', error);
+    });
+}
+</script>
+
+<!-- CSS for sidebar -->
+<style>
+.dashboard-layout {
+    display: flex;
+    min-height: 80vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    height: 100%;
+}
+
+.sidebar h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    background-color: #f8f8f8;
+}
+</style>
+
+{% endblock %}

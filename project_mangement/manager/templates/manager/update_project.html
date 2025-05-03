@@ -1,0 +1,68 @@
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Edit Project: {{ project.projectname }}</h2>
+
+    <form method="POST" action="">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-3">
+            <label for="projectName" class="form-label">Project Name</label>
+            {{ form.projectname }}
+        </div>
+
+        <div class="mb-3">
+            <label for="projectDescription" class="form-label">Description</label>
+            {{ form.projectdesc }}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                {{ form.start_date }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="endDate" class="form-label">End Date</label>
+                {{ form.end_date }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Required Skills</label>
+            {{ form.req_skills }}
+        </div>
+
+        <div class="mb-3">
+            <label>Team Members</label>
+            {{ form.team_members }}
+        </div>
+
+        <button type="submit" class="btn btn-success">Update Project</button>
+        <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<!-- Select2 CSS and JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#id_req_skills').select2({
+            placeholder: "Select required skills",
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#id_team_members').select2({
+            placeholder: "Select team members",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+
+{% endblock %}

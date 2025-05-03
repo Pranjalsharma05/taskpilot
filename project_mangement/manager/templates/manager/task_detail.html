@@ -1,0 +1,198 @@
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Detail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f5f7;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+        .left-section {
+            flex: 6;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .right-section {
+            flex: 4;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 2px solid #e1e2e3;
+        }
+        .task-header h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .task-header p {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .list-group {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .list-group-item {
+            padding: 10px;
+            border: 1px solid #e1e2e3;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .form-container {
+            margin-top: 20px;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #e1e2e3;
+            background-color: #fafafa;
+            font-size: 1rem;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .progress-bar-container {
+            background-color: #f3f3f3;
+            height: 25px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            background-color: #4CAF50;
+        }
+        .time-log-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Left Section -->
+    <div class="left-section">
+        <!-- Task Header -->
+        <div class="task-header">
+            <h2>{{ task.title }}</h2>
+            <p><strong>Description:</strong> {{ task.description }}</p>
+            <p><strong>Assigned To:</strong> {{ task.assigned_to }}</p>
+            <p><strong>Status:</strong> {{ task.status }}</p>
+        </div>
+
+        <!-- Comments Section -->
+        <h3 class="section-title">Comments</h3>
+        <ul class="list-group">
+            {% for comment in comments %}
+                <li class="list-group-item">
+                    <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+                    <p style="font-size: 0.9rem; color: #7f8c8d;">Posted on: {{ comment.created_at }}</p>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No comments yet!</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Add Comment Form -->
+        <div class="form-container">
+            <h4>Add a Comment</h4>
+            <form method="POST">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit" name="comment">Add Comment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right-section">
+        <!-- Time Logs Section -->
+        <h3 class="section-title">Time Logs</h3>
+        <ul class="list-group">
+            {% for time_log in time_logs %}
+                <li class="list-group-item">
+                    <strong>{{ time_log.user.username }}</strong>: {{ time_log.hours_spent }} hours
+                    <p style="font-size: 0.9rem; color: #7f8c8d;">Logged on: {{ time_log.date_logged }}</p>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No time logs yet!</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Task Progress -->
+        <div class="task-progress" style="margin-top: 20px;">
+            <h4>Task Progress</h4>
+            <div class="time-log-info">
+                <span>Estimated Time:</span> <span>{{ task.estimated_time }} hours</span>
+            </div>
+            <div class="time-log-info">
+                <span>Time Logged:</span> <span>{{ total_time_logged|floatformat:2 }} hours</span>
+            </div>
+            <div class="time-log-info">
+                <span>Time Remaining:</span> <span>{{ time_remaining|floatformat:2 }} hours</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ progress_percentage|floatformat:0 }}%;">
+                    {{ progress_percentage|floatformat:0 }}%
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Time Log Form -->
+        <div class="form-container">
+            <h4>Add Time Log</h4>
+            <form method="POST">
+                {% csrf_token %}
+                {{ time_log_form.as_p }}
+                <button type="submit" name="time_log">Add Time Log</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{% endblock %}

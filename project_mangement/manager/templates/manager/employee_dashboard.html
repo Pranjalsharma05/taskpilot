@@ -1,0 +1,89 @@
+{% extends 'manager/base.html' %}
+
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome, Employee!</h1>
+{{ user.email }}
+<p>Here are your current tasks and upcoming deadlines.</p>
+
+<div class="container-fluid p-4">
+    <h2 class="mb-4">My Tasks</h2>
+    <div class="recommendation-box">
+        <h4>🔍 AI Recommendation</h4>
+        <p><strong>Suggested Task:</strong> <span class="text-primary">Complete API Integration</span></p>
+        <p>🔹 Reason: High priority & approaching deadline (April 15, 2025).</p>
+    </div>
+    <div class="sprint-box mb-4">
+        <h4>🚀 Active Sprint: Sprint 4</h4>
+        <p>🕒 Deadline: April 20, 2025</p>
+    </div>
+    <div class="row">
+        <!-- To Do Tasks -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    To Do
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for task in tasks_todo %}
+                    <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No tasks to do!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- In Progress Tasks -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    In Progress
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for task in tasks_in_progress %}
+                    <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No tasks in progress!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    Completed
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for task in tasks_completed %}
+                    <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No completed tasks yet!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Due Tasks -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    Due
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for task in tasks_due %}
+                    <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No overdue tasks!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

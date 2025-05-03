@@ -1,0 +1,26 @@
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow p-4" style="width: 100%; max-width: 500px;">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">Add a New Role</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="roleName" class="form-label">Role Name</label>
+                    <input type="text" name="name" class="form-control" id="roleName" placeholder="e.g. Backend Developer" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Add Role</button>
+            </form>
+
+            <hr class="mt-4">
+            <h5 class="text-center">Existing Roles:</h5>
+            <ul class="list-group list-group-flush">
+                {% for role in roles %}
+                    <li class="list-group-item text-center">{{ role.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
