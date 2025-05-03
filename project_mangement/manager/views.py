@@ -73,7 +73,8 @@ def login_user(request):
             print(f"Attempting to authenticate user with email: {email}")  # Debug: Check what email is being passed for authentication
 
             # Use authenticate to validate user credentials
-            user = authenticate(request, email=email, password=password)
+            user = authenticate(request, username=email, password=password)
+
 
             if user is not None:
                 print(f"User {user.email} authenticated successfully.")  # Debug: Check if user is authenticated
@@ -448,7 +449,7 @@ def recommend_project(request):
                     preferred_role=None  # or carry over if needed
                 )
 
-                return render(request, 'manager_pages/recommend_project.html', {
+                return render(request, 'manager/recommend_project.html', {
                     'form': RecommendationForm(request.POST),
                     'recommendations': recommendations,
                     'projectname': projectname,
@@ -476,7 +477,7 @@ def recommend_project(request):
                 project.team_members.add(user)
 
            
-            return redirect('projects:manager_home')
+            return redirect('manager_home')
 
         else:
             # First submission: get recommendations
@@ -530,7 +531,7 @@ def recommend_task(request, project_id):
     suggestions = generate_task_suggestions(project.projectdesc, project.end_date)
     tasks = project.tasks.all()
 
-    return render(request, 'manager_pages/project_detail.html', {
+    return render(request, 'manager/project_detail.html', {
         'project': project,
         'tasks': tasks,
         'suggestions': suggestions,
