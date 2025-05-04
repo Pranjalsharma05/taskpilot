@@ -1,4 +1,69 @@
 {% block content %}
+<style>
+    /* Modal Custom Styling */
+    .modal-content {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        border-left: 5px solid #0d6efd;
+    }
+
+    .modal-header {
+        background-color: #f0f2f5;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        font-size: 20px;
+        color: #333;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        font-size: 15px;
+        color: #444;
+    }
+
+    .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-footer .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        padding: 0.5rem 1.2rem;
+        border-radius: 6px;
+    }
+
+    .modal-footer .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+        padding: 0.5rem 1.2rem;
+        border-radius: 6px;
+    }
+
+    /* Optional: Improve form field spacing */
+    form p {
+        margin-bottom: 1rem;
+    }
+
+    form input, form select, form textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+</style>
+
 <!-- Modal for Adding Task -->
 <div class="modal fade" id="addTaskModal{{ project.id }}" tabindex="-1" aria-labelledby="addTaskModalLabel{{ project.id }}" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -10,7 +75,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    {{ form.as_p }} <!-- This will render the form fields -->
+                    {{ form.as_p }} <!-- Renders Django form fields -->
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Add Task</button>
