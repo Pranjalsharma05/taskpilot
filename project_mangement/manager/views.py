@@ -352,8 +352,8 @@ def add_task(request, project_id):
 
 def task_detail(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    
-    # Handle comment form submission
+
+    # --- Handle Comment Form ---
     if request.method == 'POST' and 'comment' in request.POST:
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
@@ -365,7 +365,7 @@ def task_detail(request, task_id):
     else:
         comment_form = CommentForm()
 
-    # Handle time log form submission
+    # --- Handle Time Log Form ---
     if request.method == 'POST' and 'time_log' in request.POST:
         time_log_form = TimeLogForm(request.POST)
         if time_log_form.is_valid():
@@ -377,30 +377,38 @@ def task_detail(request, task_id):
     else:
         time_log_form = TimeLogForm()
 
-    # Get all comments and time logs for this task
+    # --- Handle Task Status Update Form (Only 'status' field) ---
+    if request.method == 'POST' and 'update_status' in request.POST:
+        status_form = TaskForm(request.POST, instance=task)
+        # Only allow 'status' field to be updated
+        status_form.fields.clear()
+        status_form.fields['status'] = TaskForm(request.POST, instance=task).fields['status']
+        if status_form.is_valid():
+            task.status = status_form.cleaned_data['status']
+            task.save()
+            return redirect('task_detail', task_id=task.id)
+    else:
+        status_form = TaskForm(instance=task)
+        # Hide all fields except status
+        allowed_status_field = status_form.fields['status']
+        status_form.fields.clear()
+        status_form.fields['status'] = allowed_status_field
+
+    # --- Comments and Time Logs ---
     comments = task.comments.all()
     time_logs = task.time_logs.all()
 
-    # 🛠 Calculate total time logged
+    # --- Time Calculations ---
     total_time_logged = sum(tl.hours_spent for tl in time_logs)
-
-    # 🛠 Calculate time remaining
-    if task.estimated_time:
-        time_remaining = max(task.estimated_time - total_time_logged, 0)  # no negative values
-    else:
-        time_remaining = 0
-
-    # 🛠 Calculate progress percentage
-    if task.estimated_time:
-        progress_percentage = (total_time_logged / task.estimated_time) * 100
-        progress_percentage = min(progress_percentage, 100)  # cap at 100%
-    else:
-        progress_percentage = 0
+    time_remaining = max(task.estimated_time - total_time_logged, 0) if task.estimated_time else 0
+    progress_percentage = (total_time_logged / task.estimated_time) * 100 if task.estimated_time else 0
+    progress_percentage = min(progress_percentage, 100)
 
     return render(request, 'manager/task_detail.html', {
         'task': task,
         'comment_form': comment_form,
         'time_log_form': time_log_form,
+        'status_form': status_form,
         'comments': comments,
         'time_logs': time_logs,
         'total_time_logged': total_time_logged,

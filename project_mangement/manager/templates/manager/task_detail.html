@@ -123,7 +123,12 @@
             <p><strong>Assigned To:</strong> {{ task.assigned_to }}</p>
             <p><strong>Status:</strong> {{ task.status }}</p>
         </div>
-
+        <form method="post">
+            {% csrf_token %}
+            {{ status_form.status.label_tag }} {{ status_form.status }}
+            <button type="submit" name="update_status">Update Status</button>
+        </form>
+        
         <!-- Comments Section -->
         <h3 class="section-title">Comments</h3>
         <ul class="list-group">
