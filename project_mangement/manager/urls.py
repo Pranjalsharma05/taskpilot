@@ -29,8 +29,7 @@ urlpatterns = [
     path('project/<int:project_id>/add_suggested_task/', views.add_suggested_task, name='add_suggested_task'),
 
 
-      path('your_task/', views.your_task, name='your_task'),
-     path('change-task-status/', views.change_task_status, name='change_task_status'),
+
 
   
 ]
