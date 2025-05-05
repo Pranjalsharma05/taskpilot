@@ -9,12 +9,12 @@
     <div class="sidebar">
         <h2>Manager</h2>
         <ul>
-            <li><a href="#" onclick="loadContent('{% url 'manager_home' %}')">🏠 Home</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'add_project' %}')">➕ Add Projects</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'recommend_project' %}')">⚙️ Automate Projects</a></li>
-            <li><a href="#" onclick="loadContent('{% url 'skill_manage' %}')">🧠 Manage Skills</a></li> 
-         
+            <li><a href="javascript:void(0);" onclick="loadContent('{% url 'manager_home' %}');">🏠 Home</a></li>
+            <li><a href="javascript:void(0);" onclick="loadContent('{% url 'add_project' %}');">➕ Add Projects</a></li>
+            <li><a href="javascript:void(0);" onclick="loadContent('{% url 'recommend_project' %}');">⚙️ Automate Projects</a></li>
+            <li><a href="javascript:void(0);" onclick="loadContent('{% url 'skill_manage' %}');">🧠 Manage Skills</a></li>
         </ul>
+        
     </div>
 
     <!-- Main Content Area -->
@@ -28,21 +28,23 @@
 
 <!-- JavaScript for Dynamic Loading -->
 <script>
-function loadContent(url) {
-    fetch(url)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not OK');
-        }
-        return response.text();
-    })
-    .then(html => {
-        document.getElementById('main-content').innerHTML = html;
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-    });
-}
+    function loadContent(url) {
+        fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not OK');
+            }
+            return response.text();
+        })
+        .then(html => {
+            document.getElementById('main-content').innerHTML = html;
+            window.history.pushState({}, '', url); // Update the URL in the address bar
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+    }
+    
 </script>
 
 <!-- Enhanced CSS UI -->
@@ -53,7 +55,7 @@ body {
     margin: 0;
     padding: 0;
 }
-
+/* Updated layout */
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
@@ -68,6 +70,8 @@ body {
     padding: 30px 20px;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     flex-shrink: 0;
+    position: fixed; /* Make the sidebar fixed */
+    height: 100%; /* Full height for the sidebar */
 }
 
 .sidebar h2 {
@@ -102,9 +106,11 @@ body {
 
 /* Main Content */
 .main-content {
-    flex: 1;
-    padding: 40px;
+    margin-left: 250px; /* Space for the fixed sidebar */
+    padding: 20px;
     background-color: #f4f7fa;
+    transition: margin-left 0.3s ease;
+    flex: 1;
 }
 
 .welcome-card {
@@ -139,6 +145,8 @@ body {
     .sidebar {
         width: 100%;
         text-align: center;
+        position: relative; /* Revert to normal flow for mobile */
+        height: auto;
     }
 
     .sidebar ul li a {
@@ -148,7 +156,9 @@ body {
 
     .main-content {
         padding: 20px;
+        margin-left: 0; /* Remove margin on mobile */
     }
 }
+
 </style>
 {% endblock %}

@@ -336,15 +336,21 @@ def add_task(request, project_id):
     
     if request.method == 'POST':
         form = TaskForm(request.POST)
+        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members
         if form.is_valid():
             task = form.save(commit=False)
-            task.project = project  # Ensure task is associated with the correct project
+            task.project = project
             task.save()
-            return redirect('project_detail', pk=project.id)  # Redirect to project details after saving the task
+            form.save_m2m()  # Save many-to-many fields like required_skills
+            return redirect('project_detail', pk=project.id)
     else:
         form = TaskForm()
+        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members
 
-    return render(request, 'manager/add_task.html', {'form': form, 'project': project})
+    return render(request, 'manager/add_task.html', {
+        'form': form,
+        'project': project
+    })
 
 
 
@@ -562,5 +568,4 @@ def add_suggested_task(request, project_id):
         )
 
     return redirect("manager/project_detail", pk=project_id)
-
 
