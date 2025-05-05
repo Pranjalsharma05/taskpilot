@@ -556,5 +556,16 @@ def add_suggested_task(request, project_id):
     return redirect("manager/project_detail", pk=project_id)
 
 
+@login_required
+def your_task(request):
+    user = request.user
+    tasks = Task.objects.filter(assigned_to=user).order_by('deadline')
 
-    
+    grouped_tasks = [
+        {'label': 'To Do', 'tasks': tasks.filter(status='todo')},
+        {'label': 'In Progress', 'tasks': tasks.filter(status='in_progress')},
+        {'label': 'Completed', 'tasks': tasks.filter(status='completed')},
+        {'label': 'Due', 'tasks': tasks.filter(status='due')},
+    ]
+
+    return render(request, 'manager/your_task.html', {'grouped_tasks': grouped_tasks})

@@ -26,5 +26,9 @@ urlpatterns = [
     path('task/<int:task_id>/', views.task_detail, name='task_detail'),
     path('recommend/', views.recommend_project, name='recommend_project'),
     path('project/<int:project_id>/recommend_task/', views.recommend_task, name='recommend_task'),
-    path('project/<int:project_id>/add_suggested_task/', views.add_suggested_task, name='add_suggested_task'),  
+    path('project/<int:project_id>/add_suggested_task/', views.add_suggested_task, name='add_suggested_task'),
+
+
+      path('your_task/', views.your_task, name='your_task'),
+  
 ]

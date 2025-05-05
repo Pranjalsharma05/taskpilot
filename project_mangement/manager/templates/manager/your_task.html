@@ -1,0 +1,49 @@
+{% extends 'manager/base.html' %}
+
+{% block title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Your Assigned Tasks</h1>
+
+<div class="row">
+    {% for group in grouped_tasks %}
+        {% if group.label == 'To Do' or group.label == 'In Progress' %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        {{ group.label }}
+                    </div>
+                    <div class="card-body">
+                        {% if group.tasks.exists %}
+                            <ul class="list-unstyled">
+                                {% for task in group.tasks %}
+                                    <li class="mb-3">
+                                        <strong>{{ task.title }}</strong> – 
+                                        <small class="text-muted">{{ task.deadline }}</small>
+                                        <p class="status">
+                                            {% if task.assigned_to %}
+                                                Status: {{ task.get_status_display }}
+                                            {% else %}
+                                                <span class="text-danger">Not Assigned</span>
+                                            {% endif %}
+                                        </p>
+                                        <div class="mt-2">
+                                            <button class="btn btn-primary change-status-btn" 
+                                                    data-task-id="{{ task.id }}"
+                                                    data-current-status="{{ task.status }}">
+                                                Change Status
+                                            </button>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p><em>No tasks in this category.</em></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
