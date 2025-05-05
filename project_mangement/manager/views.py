@@ -103,6 +103,19 @@ def process_login(request):
             return JsonResponse({'success': False, 'errors': form.errors})
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+def normalize_time(total_hours_raw):
+    """
+    Normalizes a float total hour value into a formatted string 'Xh Ymin'.
+    :param total_hours_raw: Total hours as a float (e.g., 2.7)
+    :return: Formatted string in 'Xh Ymin' format (e.g., '2h 42min')
+    """
+    hours = int(total_hours_raw)
+    minutes = round((total_hours_raw - hours) * 60)
+    return f"{hours}h {minutes}min"
+
+
+
+
 @login_required
 def admin_dashboard(request):
     # Ensure that only users with 'admin' role can access this dashboard
@@ -115,7 +128,12 @@ def admin_dashboard(request):
     total_tasks = Task.objects.count()
     
     task_status_counts = Task.objects.values('status').annotate(count=Count('id'))
-    time_logged = TimeLog.objects.aggregate(total_hours=Sum('hours_spent'))['total_hours'] or 0
+    
+    # Aggregate total hours logged
+    total_hours_raw = TimeLog.objects.aggregate(total_hours=Sum('hours_spent'))['total_hours'] or 0
+
+    # Normalize time
+    time_logged = normalize_time(total_hours_raw)
 
     context = {
         'total_users': total_users,
@@ -126,6 +144,7 @@ def admin_dashboard(request):
     }
 
     return render(request, 'manager/admin_dashboard.html', context)
+
 def get_dashboard_context(user):
     projects = AddProject.objects.all()
 
@@ -409,7 +428,7 @@ def task_detail(request, task_id):
     time_remaining = max(task.estimated_time - total_time_logged, 0) if task.estimated_time else 0
     progress_percentage = (total_time_logged / task.estimated_time) * 100 if task.estimated_time else 0
     progress_percentage = min(progress_percentage, 100)
-
+   
     return render(request, 'manager/task_detail.html', {
         'task': task,
         'comment_form': comment_form,
@@ -417,8 +436,8 @@ def task_detail(request, task_id):
         'status_form': status_form,
         'comments': comments,
         'time_logs': time_logs,
-        'total_time_logged': total_time_logged,
-        'time_remaining': time_remaining,
+        'total_time_logged': total_time_logged, 
+        'time_remaining': time_remaining, 
         'progress_percentage': progress_percentage,
     })
 
@@ -563,9 +582,9 @@ def add_suggested_task(request, project_id):
             project=project,
             title=title,
             description="Suggested by AI. Please update.",
-            deadline=project.end_date,  # ✅ Fix: Add deadline
+            deadline=project.end_date,  # ✅ Fix: Add deadline ===
             estimated_time=8.0,         # Optional: give a default
         )
 
-    return redirect("manager/project_detail", pk=project_id)
+    return redirect(project_detail, pk=project_id)
 
