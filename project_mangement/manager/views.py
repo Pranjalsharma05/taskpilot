@@ -556,6 +556,8 @@ def add_suggested_task(request, project_id):
     return redirect("manager/project_detail", pk=project_id)
 
 
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
+import json
 @login_required
 def your_task(request):
     user = request.user
@@ -569,3 +571,33 @@ def your_task(request):
     ]
 
     return render(request, 'manager/your_task.html', {'grouped_tasks': grouped_tasks})
+
+@login_required
+@csrf_protect  # Ensures CSRF protection is enabled
+def change_task_status(request):
+    if request.method == 'POST':
+        # Get the CSRF token from the request header
+        csrf_token = request.META.get('HTTP_X_CSRFTOKEN')
+        
+        # Ensure CSRF token is valid (this will automatically be validated by Django)
+        if not csrf_token:
+            return JsonResponse({'error': 'CSRF token missing'}, status=400)
+
+        try:
+            data = json.loads(request.body)
+            task_id = data.get('task_id')
+            new_status = data.get('new_status')
+
+            if task_id and new_status in ['todo', 'in_progress', 'completed', 'due']:
+                # Update task status
+                task = Task.objects.get(id=task_id)
+                task.status = new_status
+                task.save()
+
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'error': 'Invalid data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

@@ -30,5 +30,7 @@ urlpatterns = [
 
 
       path('your_task/', views.your_task, name='your_task'),
+     path('change-task-status/', views.change_task_status, name='change_task_status'),
+
   
 ]

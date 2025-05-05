@@ -46,4 +46,62 @@
         {% endif %}
     {% endfor %}
 </div>
+
+<script>
+// ✅ CSRF token helper from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".change-status-btn");
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+            const taskId = this.dataset.taskId;
+            const currentStatus = this.dataset.currentStatus;
+            const newStatus = prompt("Enter new status (todo, in_progress, completed, due):", currentStatus);
+
+            if (newStatus && ['todo', 'in_progress', 'completed', 'due'].includes(newStatus)) {
+                const csrfToken = getCookie('csrftoken');
+
+                fetch("{% url 'change_task_status' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify({ task_id: taskId, new_status: newStatus })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Status updated successfully!");
+                        window.location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Network error or server issue.");
+                });
+            } else {
+                alert("Invalid status entered!");
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
