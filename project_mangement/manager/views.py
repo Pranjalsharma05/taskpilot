@@ -167,6 +167,7 @@ def compute_priority_score(task):
     efficiency_bonus = max(10 - float(task.estimated_time), 0)
     return urgency_score + efficiency_bonus
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def employee_dashboard(request):
     user = request.user
