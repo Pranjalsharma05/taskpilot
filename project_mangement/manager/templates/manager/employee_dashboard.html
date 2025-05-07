@@ -84,6 +84,31 @@
         </div>
     </div>
 </div>
+   
+
+
+        
+        {% if recommended_task %}
+        <div class="recommendation-box">
+            <h4>🔍 AI Recommendation</h4>
+            <p><strong>Suggested Task:</strong> 
+                <a href="{% url 'task_detail' recommended_task.id %}" class="text-primary">
+                    {{ recommended_task.title }}
+                </a>
+            </p>
+            <p>🔹 Reason: Priority {{ recommended_task.priority }}, Deadline {{ recommended_task.deadline|date:"F j, Y" }}, Est. {{ recommended_task.estimated_time }} hrs.</p>
+        </div>
+        {% else %}
+        <div class="recommendation-box text-muted">
+            <h4>🔍 AI Recommendation</h4>
+            <p>No recommended task available.</p>
+        </div>
+        {% endif %}
+
+        
+
+    </div>
+</div>
 
 
 {% endblock %}

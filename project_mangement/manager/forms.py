@@ -59,6 +59,12 @@ class UserProfileForm(forms.ModelForm):
         }
         
       
+from django.core.exceptions import ValidationError
+
+from django import forms
+from django.core.exceptions import ValidationError
+from .models import AddProject, CustomUser, Skill
+
 class AddProjectForm(forms.ModelForm):
     req_skills = forms.ModelMultipleChoiceField(
         queryset=Skill.objects.all(),
@@ -69,8 +75,9 @@ class AddProjectForm(forms.ModelForm):
             'data-placeholder': 'Select required skills'
         })
     )
+
     team_members = forms.ModelMultipleChoiceField(
-        queryset=CustomUser.objects.all(),
+        queryset=CustomUser.objects.all(),  # Will be overridden in __init__
         required=True,
         widget=forms.SelectMultiple(attrs={
             'class': 'form-control select2',
@@ -82,6 +89,30 @@ class AddProjectForm(forms.ModelForm):
     class Meta:
         model = AddProject
         fields = ['projectname', 'projectdesc', 'start_date', 'end_date', 'req_skills', 'team_members']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AddProjectForm, self).__init__(*args, **kwargs)
+
+        # Filter users to only employees and managers
+        self.fields['team_members'].queryset = CustomUser.objects.filter(role__in=['employee', 'manager'])
+
+        # Show username with role in label
+        self.fields['team_members'].label_from_instance = lambda obj: f"{obj.username} ({obj.role.capitalize()})"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+
+        if start_date and end_date and end_date < start_date:
+            raise ValidationError("End date cannot be earlier than start date.")
+
+
+
 class AddSkillForm(forms.ModelForm):
     class Meta:
         model = Skill
@@ -100,6 +131,8 @@ class RoleForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter role name'}),
         }
 
+
+
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
@@ -111,7 +144,20 @@ class TaskForm(forms.ModelForm):
             'deadline': forms.DateInput(attrs={'type': 'date'}),
             'required_skills': forms.CheckboxSelectMultiple(),
         }
-                
+
+    def clean(self):
+      cleaned_data = super().clean()
+      deadline = cleaned_data.get("deadline")
+      assigned_project = cleaned_data.get("project")  # Ensure that the project field is correctly referred to.
+
+      if assigned_project and deadline:
+        project_end_date = assigned_project.end_date  # Ensure your AddProject model has an 'end_date' field.
+        if deadline > project_end_date:
+            raise ValidationError("Task deadline cannot be later than the project's deadline.")
+    
+      return cleaned_data
+
+    
                 
 from django import forms
 from .models import Comment, TimeLog

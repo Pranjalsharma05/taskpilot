@@ -6,7 +6,7 @@ from django.contrib import messages
 from .forms import AddProjectForm, CommentForm, RegistrationForm, LoginForm, RoleForm, TaskForm, TimeLogForm,UserProfileForm
 from .models import AddProject, CustomUser, Role, Task,UserProfile,Skill,TimeLog
 from django.db.models import Count, Sum
-
+from django.utils import timezone
 
 def index(request):
     return render(request,"manager/index.html")
@@ -145,21 +145,7 @@ def admin_dashboard(request):
 
     return render(request, 'manager/admin_dashboard.html', context)
 
-def get_dashboard_context(user):
-    projects = AddProject.objects.all()
 
-    tasks_todo = Task.objects.filter(assigned_to=user, status='todo')
-    tasks_in_progress = Task.objects.filter(assigned_to=user, status='in_progress')
-    tasks_completed = Task.objects.filter(assigned_to=user, status='completed')
-    tasks_due = Task.objects.filter(assigned_to=user, status='due')
-
-    return {
-        'projects': projects,
-        'tasks_todo': tasks_todo,
-        'tasks_in_progress': tasks_in_progress,
-        'tasks_completed': tasks_completed,
-        'tasks_due': tasks_due,
-    }
 
 @login_required
 def manager_dashboard(request):
@@ -168,15 +154,39 @@ def manager_dashboard(request):
         return HttpResponseForbidden("You are not authorized to view this page.")
     return render(request, 'manager/manager_dashboard.html')
 
+def compute_priority_score(task):
+    days_left = (task.deadline - timezone.now().date()).days
+    days_left = max(days_left, 1)
+    urgency_score = (task.priority * 10) / days_left
+    efficiency_bonus = max(10 - float(task.estimated_time), 0)
+    return urgency_score + efficiency_bonus
+
+
+
 @login_required
 def employee_dashboard(request):
-    # Ensure that only users with 'employee' role can access this dashboard
-    if request.user.role != 'employee':
-        return HttpResponseForbidden("You are not authorized to view this page.")
-    
-    context = get_dashboard_context(request.user)  # Reuse the common context
-    return render(request, 'manager/employee_dashboard.html', context)
+    user = request.user
 
+    if user.role != 'employee':
+        return HttpResponseForbidden("You are not authorized to view this page.")
+
+    all_tasks = Task.objects.filter(assigned_to=user)
+    tasks_todo = all_tasks.filter(status='todo')
+    tasks_in_progress = all_tasks.filter(status='in_progress')
+    tasks_completed = all_tasks.filter(status='completed')
+    tasks_due = all_tasks.filter(status='due')
+
+    actionable_tasks = all_tasks.filter(status__in=['todo', 'in_progress'])
+    sorted_tasks = sorted(actionable_tasks, key=compute_priority_score, reverse=True)
+    top_task = sorted_tasks[0] if sorted_tasks else None
+
+    return render(request, 'manager/employee_dashboard.html', {
+        'tasks_todo': tasks_todo,
+        'tasks_in_progress': tasks_in_progress,
+        'tasks_completed': tasks_completed,
+        'tasks_due': tasks_due,
+        'recommended_task': top_task,
+    })
 
  
 
@@ -320,16 +330,16 @@ def update_project(request, pk):
         form = AddProjectForm(request.POST, instance=project)
         if form.is_valid():
             form.save()
-            return redirect('projects:project_detail', pk=project.pk)
+            return redirect('project_detail', pk=project.pk)
     else:
         form = AddProjectForm(instance=project)
-    return render(request, 'manager_pages/update_project.html', {'form': form, 'project': project})
+    return render(request, 'manager/update_project.html', {'form': form, 'project': project})
 
 def delete_project(request, pk):
     project = get_object_or_404(AddProject, pk=pk)
     if request.method == 'POST':
         project.delete()
-        return redirect('manager_home')
+        return redirect('manager_dashboard')
     return render(request, 'projects/delete_project_confirm.html', {'project': project})
 
 def manager_home(request):
@@ -351,28 +361,31 @@ def manager_home(request):
 
 
 def add_task(request, project_id):
-    project = AddProject.objects.get(id=project_id)
-    
+    try:
+        project = AddProject.objects.get(id=project_id)
+    except AddProject.DoesNotExist:
+        return redirect('error_page')
+
     if request.method == 'POST':
         form = TaskForm(request.POST)
-        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members
+        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members to project team
         if form.is_valid():
-            task = form.save(commit=False)
-            task.project = project
-            task.save()
+            task = form.save(commit=False)  # Don't save yet
+            task.project = project  # Assign project to the task
+            task.save()  # Save the task
             form.save_m2m()  # Save many-to-many fields like required_skills
             return redirect('project_detail', pk=project.id)
+        else:
+            print(form.errors)  # For debugging
+
     else:
         form = TaskForm()
-        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members
+        form.fields['assigned_to'].queryset = project.team_members.all()  # Limit members to project team
 
     return render(request, 'manager/add_task.html', {
         'form': form,
         'project': project
     })
-
-
-
 
 
 def task_detail(request, task_id):
@@ -588,3 +601,5 @@ def add_suggested_task(request, project_id):
 
     return redirect(project_detail, pk=project_id)
 
+
+  

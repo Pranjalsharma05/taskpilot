@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+        }
+        .sidebar a {
+            color: white;
+            display: block;
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h4>Manager Menu</h4>
+    <a href="{% url 'manager_dashboard' %}">Dashboard</a>
+    <a href="{% url 'recommend_project' %}">Automate Project</a>
+    <a href="{% url 'profile_view' %}">Profile</a>
+    <a href="{% url 'logout' %}">Logout</a>
+</div>
+
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
