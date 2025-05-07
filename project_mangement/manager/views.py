@@ -7,6 +7,7 @@ from .forms import AddProjectForm, CommentForm, RegistrationForm, LoginForm, Rol
 from .models import AddProject, CustomUser, Role, Task,UserProfile,Skill,TimeLog
 from django.db.models import Count, Sum
 from django.views.decorators.cache import cache_control
+from django.utils import timezone
 
 
 
@@ -159,6 +160,12 @@ def manager_dashboard(request):
     if request.user.role != 'manager':
         return HttpResponseForbidden("You are not authorized to view this page.")
     return render(request, 'manager/manager_dashboard.html')
+def compute_priority_score(task):
+    days_left = (task.deadline - timezone.now().date()).days
+    days_left = max(days_left, 1)
+    urgency_score = (task.priority * 10) / days_left
+    efficiency_bonus = max(10 - float(task.estimated_time), 0)
+    return urgency_score + efficiency_bonus
 
 @login_required
 def employee_dashboard(request):
@@ -184,7 +191,6 @@ def employee_dashboard(request):
         'tasks_due': tasks_due,
         'recommended_task': top_task,
     })
-
  
 
 
