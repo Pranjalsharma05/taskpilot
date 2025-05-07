@@ -9,11 +9,61 @@
 
 <div class="container-fluid p-4">
     <h2 class="mb-4">My Tasks</h2>
+    {% if recommended_task %}
     <div class="recommendation-box">
-        <h4>🔍 AI Recommendation</h4>
-        <p><strong>Suggested Task:</strong> <span class="text-primary">Complete API Integration</span></p>
-        <p>🔹 Reason: High priority & approaching deadline (April 15, 2025).</p>
+        <h4>🔍 Priority Task Recommendation</h4>
+        <p><strong>Suggested Task:</strong> 
+            <a href="{% url 'task_detail' recommended_task.id %}" class="text-primary">
+                {{ recommended_task.title }}
+            </a>
+        </p>
+        <p>🔹 Reason: Priority {{ recommended_task.priority }}, Deadline {{ recommended_task.deadline|date:"F j, Y" }}, Est. {{ recommended_task.estimated_time }} hrs.</p>
     </div>
+    {% else %}
+    <div class="recommendation-box text-muted">
+        <h4>🔍 Task Recommendation</h4>
+        <p>No recommended task available.</p>
+    </div>
+    {% endif %}
+<style>
+    .recommendation-box {
+        background-color: #f0f8ff; /* light blue shade */
+        border-left: 6px solid #007bff; /* Bootstrap primary color */
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        transition: background-color 0.3s ease;
+    }
+    
+    .recommendation-box h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+    
+    .recommendation-box p {
+        margin: 6px 0;
+        font-size: 1rem;
+        color: #333;
+    }
+    
+    .recommendation-box a.text-primary {
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .recommendation-box a.text-primary:hover {
+        text-decoration: underline;
+    }
+    
+    .recommendation-box.text-muted {
+        background-color: #f8f9fa;
+        border-left-color: #ccc;
+        color: #6c757d;
+    }
+</style>    
     <div class="sprint-box mb-4">
         <h4>🚀 Active Sprint: Sprint 4</h4>
         <p>🕒 Deadline: April 20, 2025</p>
@@ -88,23 +138,7 @@
 
 
         
-        {% if recommended_task %}
-        <div class="recommendation-box">
-            <h4>🔍 AI Recommendation</h4>
-            <p><strong>Suggested Task:</strong> 
-                <a href="{% url 'task_detail' recommended_task.id %}" class="text-primary">
-                    {{ recommended_task.title }}
-                </a>
-            </p>
-            <p>🔹 Reason: Priority {{ recommended_task.priority }}, Deadline {{ recommended_task.deadline|date:"F j, Y" }}, Est. {{ recommended_task.estimated_time }} hrs.</p>
-        </div>
-        {% else %}
-        <div class="recommendation-box text-muted">
-            <h4>🔍 AI Recommendation</h4>
-            <p>No recommended task available.</p>
-        </div>
-        {% endif %}
-
+       
         
 
     </div>
