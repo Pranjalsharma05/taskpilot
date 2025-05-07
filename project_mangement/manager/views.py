@@ -156,10 +156,19 @@ def admin_dashboard(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def manager_dashboard(request):
-    # Ensure that only users with 'manager' role can access this dashboard
     if request.user.role != 'manager':
         return HttpResponseForbidden("You are not authorized to view this page.")
-    return render(request, 'manager/manager_dashboard.html')
+    
+    manager_projects = AddProject.objects.filter(created_by=request.user)
+    
+    print("Manager:", request.user)
+    print("Projects:", list(manager_projects.values('projectname', 'created_by')))
+
+    return render(request, 'manager/manager_dashboard.html', {
+        'projects': manager_projects
+    })
+
+
 def compute_priority_score(task):
     days_left = (task.deadline - timezone.now().date()).days
     days_left = max(days_left, 1)
@@ -346,9 +355,11 @@ def delete_project(request, pk):
         return redirect('manager_dashboard')
     return render(request, 'projects/delete_project_confirm.html', {'project': project})
 
+
+# manager home
 def manager_home(request):
     user = request.user
-    projects = AddProject.objects.all()
+    projects = AddProject.objects.filter(created_by=user)
 
     tasks_todo = Task.objects.filter(assigned_to=user, status='todo')
     tasks_in_progress = Task.objects.filter(assigned_to=user, status='in_progress')
@@ -463,8 +474,8 @@ def task_detail(request, task_id):
 
         
 
-def add_project_options(request):
-    return render(request, 'manager_pages/project_options.html')
+# def add_project_options(request):
+#     return render(request, 'manager_pages/project_options.html')
 
 
 

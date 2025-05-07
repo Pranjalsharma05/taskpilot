@@ -22,18 +22,18 @@
                             <h6 class="card-subtitle mb-2 text-muted">
                                 {{ project.start_date }} to {{ project.end_date }}
                             </h6>
+                            
                             <p class="card-text">{{ project.projectdesc|truncatechars:100 }}</p>
                             <a href="{% url 'project_detail' project.pk %}" class="card-link mt-auto">View Details</a>
                             <a href="{% url 'add_task' project.id %}" class="card-link mt-auto">Add Task</a>
-
                         </div>
                     </div>
                 </div>
-        
-                     {% empty %}
+            {% empty %}
                 <p>No projects found.</p>
             {% endfor %}
         </div>
+        
         
         <br>
 
