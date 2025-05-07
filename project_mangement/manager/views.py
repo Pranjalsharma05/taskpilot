@@ -6,10 +6,12 @@ from django.contrib import messages
 from .forms import AddProjectForm, CommentForm, RegistrationForm, LoginForm, RoleForm, TaskForm, TimeLogForm,UserProfileForm
 from .models import AddProject, CustomUser, Role, Task,UserProfile,Skill,TimeLog
 from django.db.models import Count, Sum
-
-
+from django.views.decorators.cache import never_cache,cache_control
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
     return render(request,"manager/index.html")
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -65,6 +67,7 @@ def save_user(user_info):
     return user
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
         if request.user.role == 'admin':
@@ -115,7 +118,7 @@ def normalize_time(total_hours_raw):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def admin_dashboard(request):
     # Ensure that only users with 'admin' role can access this dashboard
@@ -161,6 +164,7 @@ def get_dashboard_context(user):
         'tasks_due': tasks_due,
     }
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def manager_dashboard(request):
     # Ensure that only users with 'manager' role can access this dashboard
@@ -168,6 +172,7 @@ def manager_dashboard(request):
         return HttpResponseForbidden("You are not authorized to view this page.")
     return render(request, 'manager/manager_dashboard.html')
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def employee_dashboard(request):
     # Ensure that only users with 'employee' role can access this dashboard
@@ -182,10 +187,10 @@ def employee_dashboard(request):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    return redirect('index')
 
 
 @login_required
