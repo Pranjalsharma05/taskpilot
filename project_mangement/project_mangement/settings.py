@@ -125,4 +125,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL ='manager.CustomUser'
 # settings.py
-LOGIN_REDIRECT_URL = '/'  # Or set this to a specific page after login
+LOGIN_REDIRECT_URL = '/'  

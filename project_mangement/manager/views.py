@@ -6,10 +6,14 @@ from django.contrib import messages
 from .forms import AddProjectForm, CommentForm, RegistrationForm, LoginForm, RoleForm, TaskForm, TimeLogForm,UserProfileForm
 from .models import AddProject, CustomUser, Role, Task,UserProfile,Skill,TimeLog
 from django.db.models import Count, Sum
-from django.utils import timezone
+from django.views.decorators.cache import cache_control
+
+
 
 def index(request):
     return render(request,"manager/index.html")
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -65,6 +69,7 @@ def save_user(user_info):
     return user
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
         if request.user.role == 'admin':
@@ -115,7 +120,7 @@ def normalize_time(total_hours_raw):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def admin_dashboard(request):
     # Ensure that only users with 'admin' role can access this dashboard
@@ -147,21 +152,13 @@ def admin_dashboard(request):
 
 
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def manager_dashboard(request):
     # Ensure that only users with 'manager' role can access this dashboard
     if request.user.role != 'manager':
         return HttpResponseForbidden("You are not authorized to view this page.")
     return render(request, 'manager/manager_dashboard.html')
-
-def compute_priority_score(task):
-    days_left = (task.deadline - timezone.now().date()).days
-    days_left = max(days_left, 1)
-    urgency_score = (task.priority * 10) / days_left
-    efficiency_bonus = max(10 - float(task.estimated_time), 0)
-    return urgency_score + efficiency_bonus
-
-
 
 @login_required
 def employee_dashboard(request):
@@ -192,10 +189,10 @@ def employee_dashboard(request):
 
 
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    return redirect('index')
 
 
 @login_required
