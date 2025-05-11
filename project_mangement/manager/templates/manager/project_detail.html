@@ -1,52 +1,57 @@
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-<link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
-<link rel="stylesheet" href="{% static 'css/tooplate-mini-finance.css' %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project.projectname }}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tooplate-mini-finance.css' %}">
+    <style>
+        #loader-wrapper {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-<!-- Loader -->
+        #loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loader-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #007bff;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
 <!-- Loader -->
 <div id="loader-wrapper" role="alert" aria-busy="true">
-    <div id="loader"></div>
-    <p id="loader-text">🧠 Preparing your suggestions...</p>
+    <div>
+        <div id="loader"></div>
+        <p id="loader-text">🧠 Preparing your suggestions...</p>
+    </div>
 </div>
 
-
-<style>
-  #loader-wrapper {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      background-color: white;
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-  }
-
-  #loader {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #007bff;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-  }
-  #loader-text {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: #007bff;
-    text-align: center;
-    font-weight: bold;
-}
-
-</style>
-
-{% block content %}
 <div class="container mt-5">
     <h2>{{ project.projectname }}</h2>
     <p><strong>Start Date:</strong> {{ project.start_date }}</p>
@@ -69,21 +74,24 @@
         {% endfor %}
     </p>
 
-    <!-- 🔧 Action Buttons -->
+    <!-- Email Invitation -->
+    <div class="mt-4">
+        <a href="#" id="sendMeetingInvite" class="btn btn-success">📧 Send Meeting Invite</a>
+    </div>
+
+    <!-- Action Buttons -->
     <div class="mt-4 d-flex gap-2">
         <a href="{% url 'update_project' project.pk %}" class="btn btn-warning">Edit Project</a>
-
         <form method="post" action="{% url 'delete_project' project.pk %}" onsubmit="return confirm('Are you sure you want to delete this project?');">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Delete Project</button>
         </form>
-
         <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-primary ms-auto">Back to Main page</a>
     </div>
 
     <hr class="my-5">
 
-    <!-- 🧠 AI Suggestion + Manual Task Creation -->
+    <!-- AI Suggestion + Manual Task -->
     <div class="mb-4 d-flex gap-2">
         <a href="{% url 'recommend_task' project.pk %}" class="btn btn-outline-primary">
             🔍 Generate AI Task Suggestions
@@ -93,27 +101,39 @@
         </a>
     </div>
 
+    <!-- AI Suggestions -->
     {% if suggestions %}
-    <div class="alert alert-info mt-4">
-        <h5>🧠 Suggested Tasks</h5>
-        <p>These are AI-suggested tasks based on your project description. You can review and add any you'd like:</p>
-        <ul class="list-group">
-            {% for suggestion in suggestions %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ suggestion }}
-                    <form method="post" action="{% url 'add_suggested_task' project.pk %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="title" value="{{ suggestion }}">
-                        <button type="submit" class="btn btn-sm btn-success">➕ Add</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+<div class="alert alert-info mt-4">
+    <h5>🧠 Suggested Tasks</h5>
+    <p>These are AI-suggested tasks based on your project description:</p>
+    <ul class="list-group">
+        {% for suggestion in suggestions %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ suggestion }}
+            
+            <!-- Form to assign employees to the task -->
+            <form method="post" action="{% url 'add_suggested_task' project.pk %}" class="d-flex">
+                {% csrf_token %}
+                <input type="hidden" name="title" value="{{ suggestion }}">
+                
+                <!-- Select multiple employees -->
+                <select name="employees" class="form-select" multiple>
+                    {% for user in project.team_members.all %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-sm btn-success ms-2">➕ Assign and Add</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endif %}
 
-    <!-- 🧾 Task List -->
-    <h4>Tasks for this Project</h4>
+
+    <!-- Task List -->
+    <h4 class="mt-4">Tasks for this Project</h4>
     {% if tasks %}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             {% for task in tasks %}
@@ -154,46 +174,52 @@
         <p class="text-muted">No tasks have been added yet.</p>
     {% endif %}
 </div>
-{% endblock %}
 
-
-<!-- Hide loader on full load -->
+<!-- JS: Hide loader on page load -->
 <script>
     window.addEventListener("load", function () {
-        var loader = document.getElementById("loader-wrapper");
+        const loader = document.getElementById("loader-wrapper");
         if (loader) {
             loader.style.display = "none";
         }
     });
 </script>
 
+<!-- JS: Show loader on send invite -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const generateBtn = document.querySelector('a[href*="recommend_task"]');
-        if (generateBtn) {
-            generateBtn.addEventListener("click", function () {
+        const sendBtn = document.getElementById("sendMeetingInvite");
+
+        if (sendBtn) {
+            sendBtn.addEventListener("click", function (e) {
+                e.preventDefault();
+
                 const loader = document.getElementById("loader-wrapper");
                 if (loader) {
-                    loader.style.display = "flex"; // Show loader
+                    loader.style.display = "flex";
                 }
+
+                fetch("{% url 'send_meeting_invite' project.pk %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loader.style.display = "none";
+                    alert("Meeting invite sent to all team members!");
+                })
+                .catch(error => {
+                    loader.style.display = "none";
+                    alert("Error in sending invite.");
+                });
             });
         }
     });
 </script>
-<script>
-    const messages = [
-        "🧠 Thinking hard about tasks...",
-        "🔍 Scanning project details...",
-        "💡 Generating smart suggestions...",
-        "⏳ Please wait, and have Patience😌..."
-    ];
-    let index = 0;
 
-    setInterval(() => {
-        const text = document.getElementById("loader-text");
-        if (text) {
-            text.textContent = messages[index % messages.length];
-            index++;
-        }
-    }, 2000);
-</script>
+</body>
+</html>

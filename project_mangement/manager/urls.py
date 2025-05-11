@@ -28,8 +28,8 @@ urlpatterns = [
     path('project/<int:project_id>/recommend_task/', views.recommend_task, name='recommend_task'),
     path('project/<int:project_id>/add_suggested_task/', views.add_suggested_task, name='add_suggested_task'),
 
-
-
+# meet
+path('send-invite/<int:project_id>/', views.send_meeting_email, name='send_meeting_invite'),
 
   
 ]

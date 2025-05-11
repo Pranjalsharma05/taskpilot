@@ -329,13 +329,16 @@ def add_project(request):
             "users": CustomUser.objects.all()
         })
         
-def project_detail(request, pk):
-    project = get_object_or_404(AddProject, pk=pk)
-    tasks = project.tasks.all()  # Using related_name="tasks"
-    return render(request, 'manager/project_detail.html', {
-        'project': project,
-        'tasks': tasks,
-    })
+# def project_detail(request, pk):
+#     project = get_object_or_404(AddProject, pk=pk)
+#     tasks = project.tasks.all()  # Using related_name="tasks"
+
+#     send_meeting_invite(project)
+    
+#     return render(request, 'manager/project_detail.html', {
+#         'project': project,
+#         'tasks': tasks,
+#     })
 
 def update_project(request, pk):
     project = get_object_or_404(AddProject, pk=pk)
@@ -585,6 +588,7 @@ def recommend_project(request):
 from django.shortcuts import render, get_object_or_404, redirect
 from .services import generate_task_suggestions
 from .models import AddProject, Task
+from django.contrib.auth import get_user_model
 
 def recommend_task(request, project_id):
     project = get_object_or_404(AddProject, id=project_id)
@@ -598,23 +602,88 @@ def recommend_task(request, project_id):
     })
 
 
+
+def project_detail(request, pk):
+    project = get_object_or_404(AddProject, pk=pk)
+    tasks = project.tasks.all()  # Using related_name="tasks"
+
+    
+    
+    return render(request, 'manager/project_detail.html', {
+        'project': project,
+        'tasks': tasks,
+    })
+
+
 from django.views.decorators.http import require_POST
+
+from django.shortcuts import get_object_or_404, redirect
+
 
 @require_POST
 def add_suggested_task(request, project_id):
     project = get_object_or_404(AddProject, id=project_id)
     title = request.POST.get("title", "")
+    selected_employee_ids = request.POST.getlist("employees")  # Get the selected employee IDs
 
     if title:
-        Task.objects.create(
+        task = Task.objects.create(
             project=project,
             title=title,
             description="Suggested by AI. Please update.",
-            deadline=project.end_date,  # ✅ Fix: Add deadline ===
-            estimated_time=8.0,         # Optional: give a default
+            deadline=project.end_date,  # Use project end date as default
+            estimated_time=8.0,         # You can set a default estimated time
+        )
+        
+        # Assign the selected employees to the task
+        if selected_employee_ids:
+          user = CustomUser.objects.get(id=selected_employee_ids[0])
+          task.assigned_to = user
+          task.save()
+
+    return redirect('project_detail', pk=project_id)
+
+
+
+
+
+
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+import uuid
+import random
+import string
+
+# Assuming the model is AddProject
+def generate_unique_link():
+    """Generate a unique meeting link using UUID."""
+    room_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    return f"https://meet.jit.si/{room_name}"  # Replace with actual service URL
+
+
+def send_meeting_invite(project):
+    """Send meeting invite to project members."""
+    meeting_link = generate_unique_link()
+    subject = f"Meeting Invite for Project: {project.projectname}"
+    body = f"Dear Team,\n\nYou are invited to a meeting for the project {project.projectname}.\n\nMeeting Link: {meeting_link}\n\nBest regards,\nManager"
+
+    # Send email to each team member
+    for member in project.team_members.all():
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [member.email],
+            fail_silently=False,
         )
 
-    return redirect(project_detail, pk=project_id)
-
-
-  
+@require_POST
+def send_meeting_email(request, project_id):
+    project = get_object_or_404(AddProject, id=project_id)
+    send_meeting_invite(project)
+    return JsonResponse({"message": "Meeting invite sent successfully."})
